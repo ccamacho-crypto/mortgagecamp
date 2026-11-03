@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef } from 'react';
 import { Helmet } from '@dr.pogodin/react-helmet';
 import { motion } from 'motion/react';
 import { buildHomepageJsonLd } from '@/lib/organization-json-ld';
-import { consultationEmail } from '@/lib/consultation';
+import ConsultationForm from '@/components/ConsultationForm';
 
 const siteUrl = 'https://www.mortgagecamp.pro';
 const pageTitle = 'Mortgage Camp | Trusted Mortgage Broker | Best Rates in Florida';
@@ -201,11 +201,6 @@ function CalcCard({
 
 export default function HomePage() {
   const heroBgRef = useRef<HTMLDivElement>(null);
-  const [emailDraft, setEmailDraft] = useState<string | null>(null);
-  function handleConsultation(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setEmailDraft(consultationEmail(new FormData(event.currentTarget)));
-  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -398,100 +393,7 @@ export default function HomePage() {
                 <p className="text-sm text-muted-foreground mb-5">
                   Talk to a mortgage expert in minutes. No pressure, no pushy sales.
                 </p>
-                <form onSubmit={handleConsultation} className="flex flex-col gap-4">
-                  <div>
-                    <label
-                      htmlFor="loan-type"
-                      className="block text-xs font-semibold text-muted-foreground mb-1.5"
-                    >
-                      I'm looking to…
-                    </label>
-                    <select
-                      id="loan-type"
-                      name="loan-type"
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option>Purchase a home</option>
-                      <option>Refinance my mortgage</option>
-                      <option>Access my home equity</option>
-                      <option>Invest in property</option>
-                    </select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label
-                        htmlFor="first-name"
-                        className="block text-xs font-semibold text-muted-foreground mb-1.5"
-                      >
-                        First Name
-                      </label>
-                      <input
-                        id="first-name"
-                        name="first-name" autoComplete="given-name" required maxLength={80}
-                        type="text"
-                        placeholder="John"
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="last-name"
-                        className="block text-xs font-semibold text-muted-foreground mb-1.5"
-                      >
-                        Last Name
-                      </label>
-                      <input
-                        id="last-name"
-                        name="last-name" autoComplete="family-name" required maxLength={80}
-                        type="text"
-                        placeholder="Smith"
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="phone"
-                      className="block text-xs font-semibold text-muted-foreground mb-1.5"
-                    >
-                      Phone Number
-                    </label>
-                    <input
-                      id="phone"
-                      name="phone" autoComplete="tel" required maxLength={30}
-                      type="tel"
-                      placeholder="(305) 000-0000"
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-xs font-semibold text-muted-foreground mb-1.5"
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      id="email"
-                      name="email" autoComplete="email" required maxLength={254}
-                      type="email"
-                      placeholder="john@email.com"
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl font-bold text-base bg-gold-metallic hover:-translate-y-0.5 transition-all duration-200 mt-1"
-                  >
-                    Schedule My Free Call →
-                  </button>
-                  <p className="text-xs text-muted-foreground text-center">
-                    No spam. No pressure. Request by email — no information is submitted here.
-                  </p>
-                  {emailDraft && <div role="status" className="text-sm rounded-lg border border-primary p-4">
-                    Your request has not been sent. <a className="text-primary underline" href={emailDraft}>Open your email draft</a> to send it, or call <a className="underline" href="tel:+17863974552">(786) 397-4552</a>.
-                  </div>}
-                </form>
+                <ConsultationForm />
               </div>
             </motion.div>
           </div>
