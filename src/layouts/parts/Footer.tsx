@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router';
+import { CONSULTATION_EMAIL } from '@/lib/consultation';
 
 export default function Footer() {
   const location = useLocation();
@@ -48,10 +49,10 @@ export default function Footer() {
                 📞 (786) 397-4552
               </a>
               <a
-                href="mailto:info@mortgagecamp.pro"
+                href={`mailto:${CONSULTATION_EMAIL}`}
                 className="hover:underline text-gold-metallic"
               >
-                ✉️ info@mortgagecamp.pro
+                ✉️ {CONSULTATION_EMAIL}
               </a>
             </div>
           </div>
