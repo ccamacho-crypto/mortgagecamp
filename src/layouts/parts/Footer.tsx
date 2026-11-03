@@ -172,7 +172,7 @@ export default function Footer() {
             ))}
           </div>
           <p className="text-xs w-full md:w-auto" style={{ color: 'hsl(var(--text-subtle))' }}>
-            NMLS ID # [Your NMLS ID] | Equal Housing Opportunity Lender
+            Equal Housing Opportunity Lender
           </p>
         </div>
       </div>
