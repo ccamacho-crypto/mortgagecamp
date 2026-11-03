@@ -21,15 +21,15 @@ npm run build:pages
 The verified test suite has 139 tests. Three preserved editor-only suites cannot run because the source export omits their Airo-editor implementations; see the explicit exclusions in `vitest.config.ts` and `tsconfig.json`.
 
 ## GitHub Pages
-`npm run build:pages` generates `dist/client` with `/mortgagecamp/` paths and hash routing. `.github/workflows/static.yml` verifies pull requests and builds/deploys pushes to `main`. Configure GitHub Pages to use GitHub Actions.
+`npm run build:pages` generates `dist/client` with root-relative asset paths and hash routing for https://mortgagecamp.pro/. `.github/workflows/static.yml` verifies pull requests and builds/deploys pushes to `main`. Configure GitHub Pages to use GitHub Actions and retain the custom domain `mortgagecamp.pro`.
 
 ```sh
 npm run build:pages
 npm run preview -- --mode pages
 ```
-Open the printed URL under `/mortgagecamp/`. Navigation paths look like `/mortgagecamp/#/calculators`, which support refreshes without rewrite rules.
+Open the printed root URL. Navigation paths look like `/#/calculators`, which support refreshes without rewrite rules. For an intentional repository-subpath deployment without a custom domain, build with `VITE_BASE_PATH=/mortgagecamp/ npm run build:pages` instead.
 
-For a custom-domain/server deployment, use `npm run build` instead; the root-path and SSR configurations are retained.
+For a server deployment with SSR, use `npm run build`; custom-domain GitHub Pages must keep `npm run build:pages` so static deep links retain hash routing.
 
 ## Important before launch
 The consultation form **does not send leads to a backend**. It validates the fields and prepares an explicit email draft to the contact address supplied in the source. The visitor must send it from their email client.

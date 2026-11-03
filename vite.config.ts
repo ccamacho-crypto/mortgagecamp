@@ -366,7 +366,9 @@ if (corsOrigins.length === 0) {
 }
 
 export default defineConfig(({ mode, isSsrBuild }) => ({
-  base: mode === "pages" || process.env.GITHUB_PAGES === "true" ? `/mortgagecamp/` : "/",
+  // Custom-domain Pages serves at the origin root, not the repository path.
+  // Override only when intentionally deploying under a subdirectory.
+  base: process.env.VITE_BASE_PATH || "/",
   define: {
     'import.meta.env.VITE_GITHUB_PAGES': JSON.stringify(mode === "pages" ? "true" : process.env.VITE_GITHUB_PAGES || "false")
   },
