@@ -15,13 +15,14 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     // Use forks pool to isolate memory per test file (prevents OOM)
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        minForks: 1,
-        maxForks: 4, // Limit parallelism to prevent memory exhaustion
-        isolate: true, // Each test file runs in fresh process
-      },
-    },
+    maxWorkers: 4,
+    isolate: true,
+    // The ZIP omits these Airo editor-only implementations. Preserve their
+    // tests, but do not treat them as runnable standalone site tests.
+    exclude: ['node_modules/**', 'dist/**',
+      'src/lib/__tests__/airo-video-slots-reverse.test.ts',
+      'src/lib/__tests__/format-overrides-plugin.test.ts',
+      'src/lib/__tests__/format-overrides.test.ts'],
     // Limit concurrent tests within each file
     maxConcurrency: 5,
     coverage: {

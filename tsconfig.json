@@ -24,5 +24,10 @@
     },
     "baseUrl": "."
   },
-  "include": ["src", "vite.config.ts", "plugins"]
+  "include": ["src", "vite.config.ts", "plugins"],
+  "exclude": [
+    "src/lib/__tests__/airo-video-slots-reverse.test.ts",
+    "src/lib/__tests__/format-overrides-plugin.test.ts",
+    "src/lib/__tests__/format-overrides.test.ts"
+  ]
 }
