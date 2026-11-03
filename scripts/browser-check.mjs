@@ -46,12 +46,33 @@ try {
   await page.locator('#last-name').fill('Buyer');
   await page.locator('#phone').fill('(786) 555-0100');
   await page.locator('#email').fill('test@example.com');
+  const form = page.getByRole('form', { name: 'Free mortgage consultation' });
+  assert.equal(await form.getAttribute('method'), 'POST');
+  assert.equal(await form.getAttribute('action'), 'https://formsubmit.co/ceo@mortgagecamp.net');
+  assert.equal(await form.locator('[name="_captcha"]').inputValue(), 'true');
+  const mail = await form.getByRole('link', { name: 'ceo@mortgagecamp.net' }).getAttribute('href');
+  assert(mail.startsWith('mailto:ceo@mortgagecamp.net?'));
+  // Capture the real browser POST without sending a test lead or triggering
+  // provider CAPTCHA. This proves wiring, not provider or inbox delivery.
+  let submitted = null;
+  await page.route('https://formsubmit.co/ceo@mortgagecamp.net', async route => {
+    submitted = { method: route.request().method(), body: route.request().postData() };
+    await route.fulfill({ status: 200, contentType: 'text/html', body: '<h1>QA intercepted form submission</h1>' });
+  });
   await page.getByRole('button', { name: /Schedule My Free Call/ }).click();
-  await page.getByText('Your request has not been sent.', { exact: false }).waitFor();
-  const mail = await page.getByRole('link', { name: 'Open your email draft' }).getAttribute('href');
-  assert(mail.startsWith('mailto:info@mortgagecamp.pro?'));
-  assert(decodeURIComponent(mail).includes('test@example.com'));
-  result.checks.push('form validates and prepares explicit email handoff without claiming delivery');
+  await page.getByRole('heading', { name: 'QA intercepted form submission' }).waitFor();
+  assert.equal(submitted.method, 'POST');
+  const fields = new URLSearchParams(submitted.body);
+  assert.equal(fields.get('email'), 'test@example.com');
+  assert.equal(fields.get('first-name'), 'Test');
+  assert.equal(fields.get('last-name'), 'Buyer');
+  assert.equal(fields.get('phone'), '(786) 555-0100');
+  assert.equal(fields.get('loan-type'), 'Purchase a home');
+  assert.equal(fields.get('_captcha'), 'true');
+  assert.equal(fields.get('_honey'), '');
+  assert.equal(fields.get('_subject'), 'Mortgage Camp — free consultation request');
+  result.checks.push('native POST contains all lead fields and routes to ceo@mortgagecamp.net (intercepted; inbox delivery not asserted)');
+  await page.unroute('https://formsubmit.co/ceo@mortgagecamp.net');
   for (const width of [390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto(base);
