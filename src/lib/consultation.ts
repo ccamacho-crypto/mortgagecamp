@@ -1,16 +1,5 @@
-// Static hosting has no lead-processing backend. Preparing a mail draft is
-// explicit: no network request, no browser storage, and no false confirmation.
-export function consultationEmail(data: FormData): string {
-  const value = (key: string) => String(data.get(key) ?? '').trim();
-  const body = [
-    'I would like to schedule a free mortgage consultation.',
-    '',
-    `Goal: ${value('loan-type')}`,
-    `Name: ${value('first-name')} ${value('last-name')}`,
-    `Phone: ${value('phone')}`,
-    `Email: ${value('email')}`,
-    '',
-    'Please contact me to arrange a time.',
-  ].join('\n');
-  return `mailto:info@mortgagecamp.pro?subject=${encodeURIComponent('Free mortgage consultation request')}&body=${encodeURIComponent(body)}`;
-}
+// Public form routing, not a secret. The mailbox owner must activate FormSubmit
+// before delivery; no SMTP credentials or private API keys belong in this app.
+export const CONSULTATION_EMAIL = 'ceo@mortgagecamp.net';
+export const CONSULTATION_ENDPOINT = `https://formsubmit.co/${CONSULTATION_EMAIL}`;
+export const CONSULTATION_SUBJECT = 'Mortgage Camp — free consultation request';
