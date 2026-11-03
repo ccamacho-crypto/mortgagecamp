@@ -11,6 +11,9 @@ export default function ConsultationForm() {
       aria-describedby="consultation-privacy"
       className="flex flex-col gap-4"
     >
+      {/* Explicit source URL lets FormSubmit validate this form while the site's
+          same-origin referrer policy keeps cross-site Referer headers private. */}
+      <input type="hidden" name="_url" value="https://mortgagecamp.pro/" />
       <input type="hidden" name="_subject" value={CONSULTATION_SUBJECT} />
       <input type="hidden" name="_template" value="table" />
       <input type="hidden" name="_captcha" value="true" />

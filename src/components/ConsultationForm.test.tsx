@@ -11,6 +11,7 @@ describe('consultation form', () => {
     expect(form).toHaveAttribute('action', 'https://formsubmit.co/ceo@mortgagecamp.net');
     expect(form).toHaveAttribute('method', 'POST');
     const data = new FormData(form);
+    expect(data.get('_url')).toBe('https://mortgagecamp.pro/');
     expect(data.get('_captcha')).toBe('true');
     expect(data.get('_honey')).toBe('');
     expect(data.get('_template')).toBe('table');
