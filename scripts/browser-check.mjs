@@ -7,7 +7,7 @@ const browser = await chromium.launch({
   executablePath: process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   headless: true,
 });
-const base = process.env.TEST_URL || 'http://127.0.0.1:5173/mortgagecamp/';
+const base = process.env.TEST_URL || 'http://127.0.0.1:5173/';
 const output = process.env.QA_OUTPUT || 'verification';
 await mkdir(output, { recursive: true });
 const result = { routes: [], errors: [], failedLocalRequests: [], checks: [] };
@@ -23,7 +23,7 @@ try {
   const logo = page.locator('header img');
   assert(await logo.evaluate(i => i.complete && i.naturalWidth > 0), 'Logo must load locally');
   const heroUrl = await page.locator('#home > div').first().evaluate(e => getComputedStyle(e).backgroundImage);
-  assert(heroUrl.includes('/mortgagecamp/assets/mortgagecamp-hero.jpg'));
+  assert(heroUrl.includes(new URL('assets/mortgagecamp-hero.jpg', base).href));
   assert((await page.request.get(new URL('assets/mortgagecamp-hero.jpg', base).href)).ok());
   result.checks.push('local logo and hero image load');
   for (const path of ['rates', 'loans', 'why', 'calculators', 'process', 'reviews']) {
@@ -41,7 +41,7 @@ try {
   await page.getByRole('link', { name: /Schedule a Free Call/ }).last().click();
   await page.locator('#schedule').waitFor();
   assert(page.url().includes('#/'));
-  result.checks.push('cross-page consultation CTA works under repository subpath');
+  result.checks.push('cross-page consultation CTA works at the configured deployment base');
   await page.locator('#first-name').fill('Test');
   await page.locator('#last-name').fill('Buyer');
   await page.locator('#phone').fill('(786) 555-0100');
