@@ -1,0 +1,47 @@
+{
+  "routes": [
+    {
+      "path": "rates",
+      "title": "Today's Mortgage Rates | Mortgage Camp",
+      "h1": "Today's Mortgage Rates"
+    },
+    {
+      "path": "loans",
+      "title": "Loan Options | Mortgage Camp",
+      "h1": "Loan Options"
+    },
+    {
+      "path": "why",
+      "title": "Why Choose Us | Mortgage Camp",
+      "h1": "Why Choose Mortgage Camp"
+    },
+    {
+      "path": "calculators",
+      "title": "Mortgage Calculators | Mortgage Camp",
+      "h1": "Mortgage Calculators"
+    },
+    {
+      "path": "process",
+      "title": "Our Process | Mortgage Camp",
+      "h1": "Our Mortgage Process"
+    },
+    {
+      "path": "reviews",
+      "title": "Client Reviews | Mortgage Camp",
+      "h1": "Client Reviews"
+    }
+  ],
+  "errors": [],
+  "failedLocalRequests": [],
+  "checks": [
+    "local logo and hero image load",
+    "mortgage calculator updates to $1,388.89 at 0% interest",
+    "cross-page consultation CTA works under repository subpath",
+    "form validates and prepares explicit email handoff without claiming delivery",
+    "no horizontal overflow at 390px",
+    "mobile menu opens, navigates and closes",
+    "no horizontal overflow at 768px",
+    "no horizontal overflow at 1024px",
+    "no horizontal overflow at 1440px"
+  ]
+}

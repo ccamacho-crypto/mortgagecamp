@@ -1,20 +1,12 @@
-# Mortgage Camp Pro — Website Clone
+# Mortgage Camp clone setup
 
-This package contains the supplied React/TypeScript website source, preserving its existing pages and styling.
+The full supplied website source is now included: `src/`, `public/`, and `export-plugins/`.
 
-## Run locally
-1. Install Node.js 20 or later.
-2. In this folder run `npm install`.
-3. Run `npm run dev` and open the local URL printed by Vite.
+Use Node 22.22+, then run `npm ci` and `npm run dev`.
 
-## Production build
-Run `npm run build`. The client-side assets are generated in `dist/` (the build also generates a server bundle).
+- `npm run type-check` checks TypeScript.
+- `npm test` runs the standalone site suite.
+- `npm run build` builds root-domain client and SSR outputs.
+- `npm run build:pages` builds the GitHub Pages site under `/mortgagecamp/` with hash routing.
 
-## Deploy
-For Vercel or Netlify, import this folder as a Vite project and configure a build command compatible with the hosting environment. If deploying as a client-side SPA, configure a fallback rewrite to `/index.html` for routes such as `/rates` and `/loans`. GitHub Pages subpath deployment may require setting Vite's `base` and adjusting router behavior.
-
-## Included pages
-Home, Rates, Loans, Why, Calculators, Process, and Reviews.
-
-## Notes
-The supplied archive includes source code but not installed node_modules. External images, forms, analytics, or integrations may depend on third-party services and should be tested after deployment. This package has not been run through a full production deployment test.
+See `README.md`, `GITHUB_PAGES_SETUP.md`, and `IMPLEMENTATION.md`. The form offers email handoff, not backend delivery; licensing and legal links remain source placeholders requiring confirmation.

@@ -366,7 +366,10 @@ if (corsOrigins.length === 0) {
 }
 
 export default defineConfig(({ mode, isSsrBuild }) => ({
-  base: process.env.GITHUB_PAGES === "true" ? `/mortgagecamp/` : "/",
+  base: mode === "pages" || process.env.GITHUB_PAGES === "true" ? `/mortgagecamp/` : "/",
+  define: {
+    'import.meta.env.VITE_GITHUB_PAGES': JSON.stringify(mode === "pages" ? "true" : process.env.VITE_GITHUB_PAGES || "false")
+  },
   envPrefix: ["VITE_", "SITE_"],
 
   plugins: [
