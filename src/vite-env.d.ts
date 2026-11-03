@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_APP_NAME: string
   readonly VITE_PUBLIC_URL: string
   readonly VITE_API_URL: string
+  readonly VITE_WEB3FORMS_ACCESS_KEY?: string
   readonly VITE_ENABLE_SOURCE_MAPPING: string
   readonly VITE_ENABLE_SSR: string
   /** Unique site/app identifier set by the container runtime (local-control-plane sets SITE_ID). */
