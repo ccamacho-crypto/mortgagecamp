@@ -1,0 +1,8 @@
+{
+  "rate": 7.24,
+  "date": "2026-10-29",
+  "source": "https://www.freddiemac.com/pmms",
+  "status": "snapshot",
+  "fetched_at": "2026-11-05",
+  "warning": "Verified at deployment against Freddie Mac PMMS. Saved observation, not a real-time quote."
+}
