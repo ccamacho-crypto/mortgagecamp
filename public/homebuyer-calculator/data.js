@@ -18,7 +18,7 @@
     const data = await read('./data/rates.json', signal);
     if (!positive(data.rate) || data.rate > 25 || !/^\d{4}-\d{2}-\d{2}$/.test(data.date) || data.status !== 'snapshot') throw new Error('Invalid saved benchmark.');
     const age = Math.floor((Date.now() - Date.parse(`${data.date}T00:00:00Z`)) / 86400000);
-    data.warning = `Deployment-time benchmark snapshot (${age} days since observation), not a live browser rate or lender quote. Refresh reloads this saved file; enter a current lender rate manually.`;
+    data.warning = `Deployment-time benchmark snapshot (${age} days since observation), automatically used for estimates only; not a live rate or lender quote. Refresh reloads this saved file, not a current market feed.`;
     return data;
   }
   async function estimate(zip, price, signal) {

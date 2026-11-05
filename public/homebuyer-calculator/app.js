@@ -90,6 +90,7 @@
     // Remove stale values from the DOM as well as hiding the result container.
     document.querySelectorAll('#result-content dd, #result-content .summary-pair strong, #result-content .constraint-ratio strong').forEach((element) => { element.textContent = '—'; });
     ['required-annual', 'required-monthly', 'housing-monthly', 'front-required', 'back-required'].forEach((id) => { $(id).textContent = '—'; });
+    $('result-rate').textContent = '';
     showWarnings('calculation-warnings', []);
     setStatus('calculation-status', message, error);
   }
@@ -137,7 +138,7 @@
   function payload() {
     return {
       price: numberValue('price'), down_percent: numberValue('down_percent'),
-      rate: numberValue('rate'), term_years: Number($('term_years').value),
+      rate: state.benchmark.rate, term_years: Number($('term_years').value),
       tax_annual: numberValue('tax_annual'), insurance_annual: numberValue('insurance_annual'),
       hoa_monthly: numberValue('hoa_monthly'), extra_monthly: numberValue('extra_monthly'),
       // Preserve the editable annual rate even when its control is disabled in fixed mode.
@@ -166,6 +167,7 @@
 
   function renderResult(data) {
     validateResult(data);
+    $('result-rate').textContent = `Estimate only · ${state.benchmark.rate.toFixed(2)}% annual public benchmark · Freddie Mac PMMS 30-year fixed · ${state.benchmark.date} · ${state.benchmark.status === 'snapshot' ? 'saved snapshot' : 'public observation'}. Applied to the selected term; not a personalized lender quote or rate lock.`;
     $('required-annual').textContent = annualCurrency.format(Math.ceil(data.required_annual));
     $('required-monthly').textContent = currency.format(data.required_annual / 12);
     $('household-income').textContent = annualCurrency.format(data.income_annual);
@@ -197,6 +199,10 @@
 
   async function calculate(focusFirst = false) {
     invalidateCalculation();
+    if (!state.benchmark) {
+      clearResult('A valid public rate benchmark is required for this estimate. Wait for loading or refresh the benchmark to retry.', true);
+      return;
+    }
     if (!validateScenario(focusFirst)) {
       clearResult('Check the highlighted fields to calculate a current result.', true);
       return;
@@ -235,20 +241,20 @@
     const controller = new AbortController();
     state.rateController = controller;
     state.benchmark = null;
-    $('use-benchmark').disabled = true;
+    invalidateCalculation('Loading the public benchmark before estimating…');
+    $('rate-source').hidden = true;
     $('rate-warning').hidden = true;
-    $('rate-methodology').textContent = 'Refreshing benchmark. Your scenario interest rate is unchanged.';
-    setStatus('rate-status', 'Loading benchmark… Your scenario rate stays unchanged.');
+    $('rate-methodology').textContent = 'Refreshing the public benchmark. Estimates are paused until it is available.';
+    setStatus('rate-status', 'Loading the public benchmark for your estimate…');
     const timeout = setTimeout(() => controller.abort(), 15000);
     try {
       const data = await globalThis.MortgageCampData.rates(controller.signal);
       if (version !== state.rateVersion) return;
-      if (!finite(data.rate) || data.rate < 0 || data.rate > 25 || !['live', 'snapshot'].includes(data.status) || typeof data.date !== 'string') {
+      if (!finite(data.rate) || data.rate < 0 || data.rate > 25 || !['live', 'snapshot'].includes(data.status) || !/^\d{4}-\d{2}-\d{2}$/.test(data.date) || !sourceUrl(data.source)) {
         throw new Error('Benchmark response was incomplete.');
       }
       state.benchmark = data;
-      setStatus('rate-status', `${data.rate.toFixed(2)}% · ${data.date} · ${data.status === 'live' ? 'Live fetch' : 'Saved snapshot'}`);
-      $('use-benchmark').disabled = false;
+      setStatus('rate-status', `${data.rate.toFixed(2)}% · ${data.date} · ${data.status === 'live' ? 'Public observation' : 'Saved snapshot'} · Applied automatically for estimate only`);
       $('rate-warning').hidden = !data.warning;
       $('rate-warning').textContent = typeof data.warning === 'string' ? data.warning : '';
       const safe = sourceUrl(data.source);
@@ -258,10 +264,12 @@
       addText($('rate-methodology'), `Benchmark: ${data.rate}% • observation date: ${data.date} • status: ${data.status} • fetched: ${data.fetched_at ?? 'not supplied'}.`);
       appendSource($('rate-methodology'), 'Rate source', data.source);
       if (data.warning) addText($('rate-methodology'), String(data.warning));
+      calculate();
     } catch (error) {
       if (version !== state.rateVersion) return;
-      setStatus('rate-status', error.name === 'AbortError' ? 'Benchmark lookup timed out. Your scenario rate is unchanged.' : `Benchmark unavailable: ${error.message} Your scenario rate is unchanged.`, true);
-      $('rate-methodology').textContent = 'Benchmark unavailable. The rate input remains a manual scenario assumption; refresh to retry.';
+      setStatus('rate-status', error.name === 'AbortError' ? 'Benchmark lookup timed out. Refresh to retry; no estimate is shown.' : `Benchmark unavailable: ${error.message} Refresh to retry; no estimate is shown.`, true);
+      $('rate-methodology').textContent = 'Benchmark unavailable. No manual or default interest rate is substituted. Refresh the benchmark to retry.';
+      clearResult('Public rate benchmark unavailable. Refresh the benchmark to calculate an estimate.', true);
     } finally { clearTimeout(timeout); }
   }
 
@@ -465,12 +473,7 @@
   $('refresh-rates').addEventListener('click', loadRates);
   $('refresh-estimates').addEventListener('click', loadEstimates);
   $('estimate-button').addEventListener('click', applyEstimates);
-  $('use-benchmark').addEventListener('click', () => {
-    if (!state.benchmark) return;
-    $('rate').value = String(state.benchmark.rate);
-    setStatus('rate-status', `${state.benchmark.rate.toFixed(2)}% benchmark applied · ${state.benchmark.date} · ${state.benchmark.status}. The rate remains editable.`);
-    calculate();
-  });
+
   $('print-report').addEventListener('click', () => window.print());
   window.addEventListener('beforeprint', () => {
     $('report-time').textContent = `Planning report printed ${new Date().toLocaleString('en-US')}. Required annual targets rounded up to whole dollars. Not a lender approval.`;

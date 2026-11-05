@@ -105,7 +105,7 @@ input::-webkit-inner-spin-button, input::-webkit-outer-spin-button { -webkit-app
 .field-help, .fine-print { color: var(--muted); font-size: 12px; line-height: 1.65; }
 .field-help { margin-top: 6px; }
 .field-error { font-size: 12px; color: var(--error); margin-top: 6px; }
-.rate-block { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 22px; margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--line); }
+.rate-block { margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--line); }
 .benchmark .small-gold { font-size: 9px; }
 .status-text { font-size: 12px; line-height: 1.6; color: var(--muted); margin-top: 6px; overflow-wrap: anywhere; }
 .status-text.error { color: var(--error); }
@@ -221,7 +221,7 @@ summary::marker { color: var(--gold); }
   .intro-note { min-width: 210px; }
   .header-label { display: none; }
   .rate-block { grid-template-columns: 1fr; gap: 17px; }
-  .benchmark { border-top: 1px solid var(--line); padding-top: 15px; }
+  .benchmark { border: 0; padding: 0; }
   .estimate-top { display: block; }
   .estimate-top .text-button { margin: 2px 0 -3px; }
   .estimate-bottom { align-items: flex-start; flex-direction: column; gap: 3px; }
@@ -234,7 +234,7 @@ summary::marker { color: var(--gold); }
   .intro-note { display: none; }
   .workspace { grid-template-columns: 1fr; gap: 24px; }
   .results-column { position: static; }
-  .rate-block { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); }
+  .rate-block { grid-template-columns: 1fr; }
   .benchmark { border: 0; padding: 0; }
   .income-number { font-size: 52px; }
   .estimate-top { display: flex; }
@@ -260,7 +260,7 @@ summary::marker { color: var(--gold); }
   .field label { font-size: 13px; }
   .field label > span { display: block; padding-left: 0; font-size: 9px; }
   .rate-block { grid-template-columns: 1fr; }
-  .benchmark { padding-top: 15px; border-top: 1px solid var(--line); }
+  .benchmark { padding: 0; border: 0; }
   .estimate-top { display: block; }
   .estimate-box { padding: 14px; }
   .estimate-bottom { align-items: flex-start; flex-direction: column; gap: 3px; }
