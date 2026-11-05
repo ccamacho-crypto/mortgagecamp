@@ -33,7 +33,7 @@
       location = `${place['place name']}, ${place['state abbreviation']}`;
     } catch (error) {
       rethrowAbort(error, signal);
-      if (zip !== '33130') throw new Error('ZIP not found or location lookup unavailable. Manual costs retained.');
+      if (zip !== '33130') throw new Error('ZIP not found or location lookup unavailable. No current automatic estimate available.');
       location = 'Miami, FL';
       warnings.push('Location lookup unavailable; bundled Miami mapping used.');
     }

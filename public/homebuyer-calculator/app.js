@@ -22,7 +22,7 @@
     calculationVersion: 0, calculationController: null, calculationTimer: null,
     rateVersion: 0, rateController: null, benchmark: null,
     estimateVersion: 0, estimateController: null, estimateTimer: null, estimate: null,
-    borrowerSequence: 0, appliedEstimate: null,
+    borrowerSequence: 0,
     printedDetails: null
   };
 
@@ -82,6 +82,7 @@
   function numberValue(id) { return $(id).valueAsNumber; }
   function lookupKey() { return `${$('zip').value.trim()}|${$('price').value}`; }
   function validLookup() { return /^[0-9]{5}$/.test($('zip').value.trim()) && $('price').checkValidity(); }
+  function currentEstimate() { return state.estimate && state.estimate.key === lookupKey(); }
 
   function clearResult(message, error = false) {
     $('result-content').hidden = true;
@@ -91,6 +92,7 @@
     document.querySelectorAll('#result-content dd, #result-content .summary-pair strong, #result-content .constraint-ratio strong').forEach((element) => { element.textContent = '—'; });
     ['required-annual', 'required-monthly', 'housing-monthly', 'front-required', 'back-required'].forEach((id) => { $(id).textContent = '—'; });
     $('result-rate').textContent = '';
+    $('result-costs').textContent = '';
     showWarnings('calculation-warnings', []);
     setStatus('calculation-status', message, error);
   }
@@ -139,7 +141,7 @@
     return {
       price: numberValue('price'), down_percent: numberValue('down_percent'),
       rate: state.benchmark.rate, term_years: Number($('term_years').value),
-      tax_annual: numberValue('tax_annual'), insurance_annual: numberValue('insurance_annual'),
+      tax_annual: state.estimate.data.tax_annual, insurance_annual: state.estimate.data.insurance_annual,
       hoa_monthly: numberValue('hoa_monthly'), extra_monthly: numberValue('extra_monthly'),
       // Preserve the editable annual rate even when its control is disabled in fixed mode.
       mi_rate: numberValue('mi_rate'),
@@ -168,6 +170,8 @@
   function renderResult(data) {
     validateResult(data);
     $('result-rate').textContent = `Estimate only · ${state.benchmark.rate.toFixed(2)}% annual public benchmark · Freddie Mac PMMS 30-year fixed · ${state.benchmark.date} · ${state.benchmark.status === 'snapshot' ? 'saved snapshot' : 'public observation'}. Applied to the selected term; not a personalized lender quote or rate lock.`;
+    const costs = state.estimate.data;
+    $('result-costs').textContent = `Automatic costs · ZIP ${costs.zip} (${costs.location}) · home price ${currency.format(numberValue('price'))}. Tax: ${costs.tax.status} (${costs.tax.vintage}); hazard: ${costs.insurance.status} (${costs.insurance.vintage}). Planning estimates only, not a property tax bill or insurance quote.`;
     $('required-annual').textContent = annualCurrency.format(Math.ceil(data.required_annual));
     $('required-monthly').textContent = currency.format(data.required_annual / 12);
     $('household-income').textContent = annualCurrency.format(data.income_annual);
@@ -190,7 +194,7 @@
     $('front-constraint').classList.toggle('limiting', data.limiting_constraint === 'front');
     $('back-constraint').classList.toggle('limiting', data.limiting_constraint === 'back');
     $('limiting-copy').textContent = `${data.limiting_constraint === 'front' ? 'The housing-only (45%)' : 'The housing + liabilities (56.99%)'} limit sets the higher income requirement. Both limits must be met. Annual targets are rounded up to the next dollar.`;
-    showWarnings('calculation-warnings', data.warnings);
+    showWarnings('calculation-warnings', [...(data.warnings || []), ...(costs.warnings || [])]);
     $('result-content').hidden = false;
     $('result-empty').hidden = true;
     $('print-report').disabled = false;
@@ -205,6 +209,10 @@
     }
     if (!validateScenario(focusFirst)) {
       clearResult('Check the highlighted fields to calculate a current result.', true);
+      return;
+    }
+    if (!currentEstimate()) {
+      clearResult('Current ZIP and home-price tax / insurance estimates are required. Wait for lookup or refresh to retry.', true);
       return;
     }
     const version = state.calculationVersion;
@@ -278,32 +286,24 @@
     state.estimateController?.abort();
     clearTimeout(state.estimateTimer);
     state.estimate = null;
-    $('estimate-button').disabled = true;
+    invalidateCalculation('Updating automatic tax and insurance estimates…');
     $('estimate-values').hidden = true;
-    $('estimate-button').textContent = 'Apply ZIP estimates';
+    $('suggested-tax').textContent = '—';
+    $('suggested-insurance').textContent = '—';
+    $('estimate-methodology').textContent = 'Waiting for source details for the current ZIP and home price.';
+    $('applied-estimate-record').textContent = 'No current automatic tax or hazard estimates. Final calculation is paused until lookup completes.';
     showWarnings('estimate-warnings', []);
-  }
-
-  function refreshOrigins() {
-    const changed = state.appliedEstimate && state.appliedEstimate.key !== lookupKey();
-    ['tax', 'insurance'].forEach((kind) => {
-      const node = $(`${kind}-origin`);
-      if (node.dataset.origin === 'estimate') {
-        node.textContent = changed ? 'Previously applied ZIP estimate — home price / ZIP changed; refresh and reapply or edit.' : 'Applied ZIP planning estimate — editable';
-      }
-    });
   }
 
   function queueEstimate() {
     invalidateEstimate();
-    refreshOrigins();
     $('estimate-methodology').textContent = 'Lookup inputs changed. Source details will appear after the new lookup.';
     $('location').textContent = /^[0-9]{5}$/.test($('zip').value.trim()) ? `ZIP ${$('zip').value.trim()} — location pending` : 'Enter a valid ZIP';
     if (!validLookup()) {
       setStatus('estimate-status', 'Enter a valid five-digit ZIP and positive home price to look up estimates.', true);
       return;
     }
-    setStatus('estimate-status', 'Preparing ZIP lookup… Current tax and insurance inputs stay unchanged.');
+    setStatus('estimate-status', 'Preparing automatic ZIP and home-price estimates… Final calculation paused.');
     state.estimateTimer = setTimeout(loadEstimates, 550);
   }
 
@@ -327,7 +327,7 @@
     const key = lookupKey();
     const controller = new AbortController();
     state.estimateController = controller;
-    setStatus('estimate-status', 'Loading buffered historical estimates… Your inputs stay unchanged.');
+    setStatus('estimate-status', 'Loading automatic tax and insurance estimates… Final calculation paused.');
     const timeout = setTimeout(() => controller.abort(), 35000);
     try {
       const data = await globalThis.MortgageCampData.estimate($('zip').value.trim(), numberValue('price'), controller.signal);
@@ -341,30 +341,18 @@
       $('suggested-tax').textContent = currency.format(data.tax_annual);
       $('suggested-insurance').textContent = currency.format(data.insurance_annual);
       $('estimate-values').hidden = false;
-      $('estimate-button').disabled = false;
-      setStatus('estimate-status', `${data.location} · Tax: ${data.tax.status} (${data.tax.vintage}). Hazard: ${data.insurance.status} (${data.insurance.vintage}). Review before applying.`);
+      setStatus('estimate-status', `${data.location} · Applied automatically. Tax: ${data.tax.status} (${data.tax.vintage}). Hazard: ${data.insurance.status} (${data.insurance.vintage}).`);
       showWarnings('estimate-warnings', data.warnings);
       renderEstimateSources(data);
+      $('applied-estimate-record').textContent = `Automatic planning estimates for ${data.location}, ZIP ${data.zip}, home price ${currency.format(numberValue('price'))}: annual tax ${currency.format(data.tax_annual)}; annual hazard ${currency.format(data.insurance_annual)}. Tax method: ${data.tax.method}; vintage: ${data.tax.vintage}; status: ${data.tax.status}. Hazard method: ${data.insurance.method}; vintage: ${data.insurance.vintage}; status: ${data.insurance.status}. Not a property tax bill or insurance quote.`;
+      calculate();
     } catch (error) {
       if (version !== state.estimateVersion) return;
-      setStatus('estimate-status', error.name === 'AbortError' ? 'ZIP lookup timed out. Keep manual costs or refresh to retry.' : `ZIP lookup unavailable: ${error.message} Keep manual costs or refresh to retry.`, true);
-      $('location').textContent = 'Location not verified — manual costs retained';
-      $('estimate-methodology').textContent = 'No current ZIP estimate available. Manual inputs are retained; retry lookup or use property-specific figures.';
+      setStatus('estimate-status', error.name === 'AbortError' ? 'ZIP lookup timed out. Refresh to retry; no final estimate is shown.' : `ZIP lookup unavailable: ${error.message} Refresh to retry; no final estimate is shown.`, true);
+      $('location').textContent = 'Location not verified';
+      $('estimate-methodology').textContent = 'No current ZIP estimate available. Refresh lookup to retry; no stale or manual costs are substituted.';
+      clearResult('Automatic tax / insurance lookup unavailable. Refresh lookup to calculate a current estimate.', true);
     } finally { clearTimeout(timeout); }
-  }
-
-  function applyEstimates() {
-    if (!state.estimate || state.estimate.key !== lookupKey()) return;
-    const { key, data } = state.estimate;
-    $('tax_annual').value = String(data.tax_annual);
-    $('insurance_annual').value = String(data.insurance_annual);
-    state.appliedEstimate = { key, data };
-    ['tax', 'insurance'].forEach((kind) => { $(`${kind}-origin`).dataset.origin = 'estimate'; });
-    refreshOrigins();
-    $('applied-estimate-record').textContent = `Applied planning estimates for ${data.location}, ZIP ${data.zip}, home price ${currency.format(numberValue('price'))}: annual tax ${currency.format(data.tax_annual)}; annual hazard ${currency.format(data.insurance_annual)}. Tax method: ${data.tax.method}; vintage: ${data.tax.vintage}; status: ${data.tax.status}. Hazard method: ${data.insurance.method}; vintage: ${data.insurance.vintage}; status: ${data.insurance.status}. Subsequent manual edits supersede these amounts; current input origin labels identify overrides.`;
-    $('estimate-button').textContent = 'Reapply ZIP estimates';
-    setStatus('estimate-status', 'ZIP planning estimates applied to the editable tax and hazard fields.');
-    calculate();
   }
 
   function borrowerField(row, id, kind, labelText, value) {
@@ -456,11 +444,7 @@
   form.addEventListener('submit', (event) => { event.preventDefault(); calculate(true); });
   form.addEventListener('input', (event) => {
     const id = event.target.id;
-    if (id === 'tax_annual' || id === 'insurance_annual') {
-      const kind = id === 'tax_annual' ? 'tax' : 'insurance';
-      $(`${kind}-origin`).dataset.origin = 'manual';
-      $(`${kind}-origin`).textContent = 'Manual override — not a ZIP estimate';
-    }
+
     if (id === 'price' || id === 'zip') queueEstimate();
     scheduleCalculation();
   });
@@ -472,7 +456,7 @@
   $('add-borrower').addEventListener('click', () => addBorrower());
   $('refresh-rates').addEventListener('click', loadRates);
   $('refresh-estimates').addEventListener('click', loadEstimates);
-  $('estimate-button').addEventListener('click', applyEstimates);
+
 
   $('print-report').addEventListener('click', () => window.print());
   window.addEventListener('beforeprint', () => {
