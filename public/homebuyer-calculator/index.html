@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self' https://api.zippopotam.us https://api.censusreporter.org; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="description" content="Explore home costs, household income, and selected debt-to-income limits with Mortgage Camp's homebuying planning calculator.">
+  <title>Home Affordability Planner | Mortgage Camp</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="math.js" defer></script>
+  <script src="data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#calculator">Skip to calculator</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#" aria-label="Mortgage Camp home affordability planner">
+        <img id="brand-logo" src="/assets/mortgagecamp-logo.png" alt="" width="200" height="52">
+        <span class="brand-wordmark">MORTGAGE <span>CAMP</span></span>
+      </a>
+      <span class="header-label">A clearer path to homeownership</span>
+      <span class="header-tag">Homebuying tools</span>
+    </div>
+  </header>
+
+  <main id="main-content" class="page-shell">
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow"><span aria-hidden="true" class="eyebrow-line"></span> Your home. Your next chapter.</p>
+        <h1 id="page-title">What income does<br>your next home <em>need?</em></h1>
+        <p class="intro-copy">Start with a home price. See the monthly cost, the yearly income needed, and what changes when family buys with you.</p>
+      </div>
+      <div class="intro-note"><span class="small-gold">PLAN WITH PERSPECTIVE</span><p>A useful starting point.<br>Not a mortgage approval.</p></div>
+    </section>
+
+    <div class="workspace" id="calculator">
+      <form id="calculator-form" class="input-column" novalidate aria-label="Home affordability scenario">
+        <section class="panel" aria-labelledby="home-heading">
+          <div class="section-heading"><span class="step" aria-hidden="true">01</span><div><p class="eyebrow">The starting point</p><h2 id="home-heading">Your home</h2></div></div>
+          <div class="field-grid">
+            <div class="field"><label for="price">Home price <span>USD</span></label><div class="input-wrap"><span aria-hidden="true">$</span><input id="price" name="price" type="number" min="1" max="100000000" step="any" value="525000" inputmode="decimal" required aria-describedby="price-error"></div><p class="field-error" id="price-error" hidden></p></div>
+            <div class="field"><label for="zip">Property ZIP code</label><input id="zip" name="zip" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="5" pattern="[0-9]{5}" value="33130" required aria-describedby="zip-help zip-error"><p class="field-help" id="zip-help">ZIP lookup: <span id="location">Miami, FL (starting location)</span></p><p class="field-error" id="zip-error" hidden></p></div>
+            <div class="field"><label for="down_percent">Down payment <span>percent</span></label><div class="input-wrap suffix"><input id="down_percent" name="down_percent" type="number" min="3.5" max="100" step="any" value="3.5" required aria-describedby="down-help down_percent-error"><span aria-hidden="true">%</span></div><p class="field-help" id="down-help">3.5% minimum for this scenario; not a program guarantee.</p><p class="field-error" id="down_percent-error" hidden></p></div>
+            <div class="field"><label for="term_years">Loan term</label><select id="term_years" name="term_years"><option value="15">15 years</option><option value="20">20 years</option><option value="25">25 years</option><option value="30" selected>30 years</option></select><p class="field-help">Fixed-rate amortization.</p></div>
+          </div>
+          <div class="rate-block">
+            <div class="field"><label for="rate">Interest rate <span>annual</span></label><div class="input-wrap suffix"><input id="rate" name="rate" type="number" min="0" max="25" step="any" value="7.24" required aria-describedby="rate-help rate-error"><span aria-hidden="true">%</span></div><p class="field-help" id="rate-help">Editable scenario rate, not a personalized quote.</p><p class="field-error" id="rate-error" hidden></p></div>
+            <div class="benchmark"><p class="small-gold">PUBLIC RATE BENCHMARK</p><p id="rate-status" class="status-text" role="status">Loading benchmark… Your rate stays unchanged.</p><div class="button-row"><button type="button" id="use-benchmark" class="button button-small" disabled>Use benchmark</button><button type="button" id="refresh-rates" class="text-button">Refresh</button></div><a id="rate-source" class="source-link" href="https://www.freddiemac.com/pmms" target="_blank" rel="noopener noreferrer">Freddie Mac PMMS ↗</a><p class="field-help" id="rate-warning" hidden></p></div>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="cost-heading">
+          <div class="section-heading"><span class="step" aria-hidden="true">02</span><div><p class="eyebrow">Beyond the loan</p><h2 id="cost-heading">Monthly home costs</h2></div></div>
+          <div class="estimate-box">
+            <div class="estimate-top"><div><p class="small-gold">ZIP-BASED PLANNING ESTIMATES</p><p class="estimate-description">Buffered historical estimates. Not live property tax bills or insurance quotes.</p></div><button type="button" id="refresh-estimates" class="text-button">Refresh lookup</button></div>
+            <p id="estimate-status" class="status-text" role="status">Looking up the starting ZIP…</p>
+            <dl class="estimate-values" id="estimate-values" hidden><div><dt>Estimated annual tax</dt><dd id="suggested-tax">—</dd></div><div><dt>Estimated annual hazard</dt><dd id="suggested-insurance">—</dd></div></dl>
+            <div class="estimate-bottom"><button type="button" id="estimate-button" class="button button-small" disabled>Apply ZIP estimates</button><span class="field-help">Lookup never replaces your numbers automatically.</span></div>
+            <ul id="estimate-warnings" class="notice-list" hidden></ul>
+          </div>
+          <div class="field-grid">
+            <div class="field"><label for="tax_annual">Property taxes <span>per year</span></label><div class="input-wrap"><span aria-hidden="true">$</span><input id="tax_annual" name="tax_annual" type="number" min="0" max="100000000" step="any" value="4800" required aria-describedby="tax-origin tax_annual-error"></div><p class="field-help origin" id="tax-origin">Manual starting assumption</p><p class="field-error" id="tax_annual-error" hidden></p></div>
+            <div class="field"><label for="insurance_annual">Hazard insurance <span>per year</span></label><div class="input-wrap"><span aria-hidden="true">$</span><input id="insurance_annual" name="insurance_annual" type="number" min="0" max="100000000" step="any" value="3000" required aria-describedby="insurance-origin insurance_annual-error"></div><p class="field-help origin" id="insurance-origin">Manual starting assumption</p><p class="field-error" id="insurance_annual-error" hidden></p></div>
+            <div class="field"><label for="hoa_monthly">HOA / condo dues <span>per month</span></label><div class="input-wrap"><span aria-hidden="true">$</span><input id="hoa_monthly" name="hoa_monthly" type="number" min="0" max="100000000" step="any" value="0" required aria-describedby="hoa_monthly-error"></div><p class="field-error" id="hoa_monthly-error" hidden></p></div>
+            <div class="field"><label for="extra_monthly">Other housing costs <span>per month</span></label><div class="input-wrap"><span aria-hidden="true">$</span><input id="extra_monthly" name="extra_monthly" type="number" min="0" max="100000000" step="any" value="0" required aria-describedby="extra-help extra_monthly-error"></div><p class="field-help" id="extra-help">Include additional flood / wind coverage or other recurring housing costs here.</p><p class="field-error" id="extra_monthly-error" hidden></p></div>
+          </div>
+          <details class="advanced" id="mortgage-options"><summary>Mortgage insurance &amp; optional upfront premium</summary><div class="advanced-content">
+            <div class="field"><label for="mi_mode">Mortgage insurance calculation</label><select id="mi_mode" name="mi_mode"><option value="annual" selected>Annual percentage of base loan</option><option value="fixed">Fixed monthly dollar amount</option></select></div>
+            <div class="field-grid">
+              <div class="field" id="mi-rate-field"><label for="mi_rate">Mortgage insurance rate <span>annual</span></label><div class="input-wrap suffix"><input id="mi_rate" name="mi_rate" type="number" min="0" max="10" step="any" value="0.50" required aria-describedby="mi-help mi_rate-error"><span aria-hidden="true">%</span></div><p class="field-help" id="mi-help">Base loan × 0.005 ÷ 12 at the default 0.50%.</p><p class="field-error" id="mi_rate-error" hidden></p></div>
+              <div class="field" id="mi-fixed-field" hidden><label for="mi_monthly_override">Fixed mortgage insurance <span>per month</span></label><div class="input-wrap"><span aria-hidden="true">$</span><input id="mi_monthly_override" name="mi_monthly_override" type="number" min="0" max="1000000" step="any" value="0" disabled aria-describedby="mi_monthly_override-error"></div><p class="field-error" id="mi_monthly_override-error" hidden></p></div>
+              <div class="field"><label for="upfront_percent">Optional upfront premium <span>percent</span></label><div class="input-wrap suffix"><input id="upfront_percent" name="upfront_percent" type="number" min="0" max="10" step="any" value="0" required aria-describedby="upfront-help upfront_percent-error"><span aria-hidden="true">%</span></div><p class="field-help" id="upfront-help">For example, 1.75% for an FHA-style scenario. Never added automatically.</p><p class="field-error" id="upfront_percent-error" hidden></p></div>
+            </div>
+            <label class="checkbox-label" for="finance_upfront"><input id="finance_upfront" name="finance_upfront" type="checkbox" checked><span>Finance the optional upfront premium into the loan</span></label>
+            <p class="field-help">If unchecked, the upfront premium is included in the cash amount shown. This is not a complete FHA quote; program premiums, eligibility and lender rules vary.</p>
+          </div></details>
+        </section>
+
+        <section class="panel" aria-labelledby="household-heading">
+          <div class="section-heading"><span class="step" aria-hidden="true">03</span><div><p class="eyebrow">Stronger together</p><h2 id="household-heading">Your household</h2></div></div>
+          <p class="section-copy">Add the borrowers who would be on the mortgage. We combine their gross income <strong>and</strong> monthly liabilities.</p>
+          <div id="borrowers"></div>
+          <div class="borrower-actions"><button type="button" id="add-borrower" class="button button-outline">+ Add family / co-borrower</button><span class="field-help" id="borrower-count">1 of 8 borrowers</span></div>
+          <p id="borrower-announcement" role="status" class="sr-only"></p>
+          <p class="fine-print">Include recurring loan, credit-card and other qualifying debt payments. Count a joint debt only once across borrowers. Existing rent and utilities are excluded in this scenario; disclose any continuing housing obligations to your lender. Co-borrower eligibility and allowable income depend on the lender.</p>
+          <div class="form-actions"><button type="submit" class="button button-gold" id="calculate-button">Update income plan <span aria-hidden="true">↗</span></button><span class="field-help">Updates automatically as you edit.</span></div>
+        </section>
+      </form>
+
+      <aside class="results-column" aria-label="Your homebuying income plan">
+        <section class="results-panel" aria-labelledby="results-heading" id="results-panel" aria-busy="true">
+          <div class="results-top"><p class="eyebrow">Your income plan</p><span class="scenario-tag">45% / 56.99% DTI</span></div>
+          <h2 id="results-heading">The income to aim for</h2>
+          <p id="calculation-status" class="status-text" role="status" aria-live="polite">Calculating your starting scenario…</p>
+          <div id="result-empty"><div class="empty-figure" aria-hidden="true">—</div><p>Enter your scenario to see the income and payment breakdown.</p></div>
+          <div id="result-content" hidden>
+            <div class="income-hero"><p class="metric-label">Required gross household income</p><p class="income-number"><span id="required-annual">—</span><span class="per-year"> / year</span></p><p class="income-monthly"><span id="required-monthly">—</span> per month, before tax</p></div>
+            <div id="qualification-status" class="qualification"><span class="status-dot" aria-hidden="true"></span><span id="qualification-copy">Compare with your household income below.</span></div>
+            <div class="summary-pair"><div><span>Household income</span><strong id="household-income">—</strong><small>gross / year</small></div><div><span>Additional income needed</span><strong id="income-gap">—</strong><small>gross / year</small></div></div>
+            <div class="payment-heading"><h3>Estimated monthly housing</h3><strong id="housing-monthly">—</strong></div>
+            <dl class="breakdown">
+              <div><dt>Principal &amp; interest</dt><dd id="principal-interest">—</dd></div>
+              <div><dt>Property taxes</dt><dd id="tax-monthly">—</dd></div>
+              <div><dt>Hazard insurance</dt><dd id="insurance-monthly">—</dd></div>
+              <div><dt>Mortgage insurance</dt><dd id="mi-monthly">—</dd></div>
+              <div><dt>HOA / condo dues</dt><dd id="hoa-monthly">—</dd></div>
+              <div><dt>Other housing costs</dt><dd id="extra-monthly">—</dd></div>
+              <div class="breakdown-separate"><dt>Other monthly liabilities <small>all borrowers; not in housing total</small></dt><dd id="debt-monthly">—</dd></div>
+            </dl>
+            <div class="dti-section"><h3>Both income limits must work</h3><div class="constraint" id="front-constraint"><div><strong>Housing only</strong><span>45% maximum</span></div><p><span id="front-required">—</span><small> required / year</small></p><p class="constraint-ratio">Your front-end DTI: <strong id="front-dti">—</strong></p></div><div class="constraint" id="back-constraint"><div><strong>Housing + liabilities</strong><span>56.99% maximum</span></div><p><span id="back-required">—</span><small> required / year</small></p><p class="constraint-ratio">Your back-end DTI: <strong id="back-dti">—</strong></p></div><p class="field-help" id="limiting-copy"></p></div>
+            <details class="cash-details"><summary>Down payment &amp; loan amounts</summary><dl class="breakdown"><div><dt>Down payment</dt><dd id="down-payment">—</dd></div><div><dt>Base loan, before upfront premium</dt><dd id="base-loan">—</dd></div><div><dt>Optional upfront premium</dt><dd id="upfront-fee">—</dd></div><div><dt>Total financed loan</dt><dd id="loan-total">—</dd></div><div class="breakdown-separate"><dt>Down payment + cash upfront premium</dt><dd id="cash-needed">—</dd></div></dl><p class="field-help">Not total cash to close. Closing costs, prepaid items and reserves are additional and are not estimated here.</p></details>
+            <ul id="calculation-warnings" class="notice-list" hidden></ul>
+            <p class="result-disclaimer">A planning scenario, not a prequalification or approval. Actual lender calculations, program limits and property costs may differ.</p>
+          </div>
+          <button id="print-report" class="button button-outline print-button" type="button" disabled>Print / save report</button>
+          <p id="report-time" class="print-only"></p>
+        </section>
+        <div class="aside-note"><span class="note-mark" aria-hidden="true">i</span><p>Changing the down payment or adding a co-borrower can change the picture. Explore the numbers before making a commitment.</p></div>
+      </aside>
+    </div>
+
+    <section class="methodology panel" aria-label="Sources, calculations and privacy">
+      <details id="methodology"><summary>Behind the numbers <span>Sources, formulas &amp; scenario assumptions</span></summary><div class="methodology-content">
+        <div><h3>How the income is calculated</h3><ul class="method-list"><li>Down payment = price × down payment % ÷ 100. Base loan = price − down payment.</li><li>Upfront premium = base loan × upfront % ÷ 100. Financed loan = base loan + premium if financed.</li><li>Principal and interest use fixed-rate amortization: L × r ÷ (1 − (1 + r)<sup>−n</sup>), with r = annual rate ÷ 100 ÷ 12 and n = term years × 12. At 0% interest, payment = L ÷ n.</li><li>Mortgage insurance = base loan × annual MI % ÷ 100 ÷ 12, unless a fixed monthly override is selected. Default MI: base loan × 0.005 ÷ 12.</li><li>Monthly housing = principal &amp; interest + annual taxes ÷ 12 + annual hazard insurance ÷ 12 + monthly mortgage insurance + HOA + other monthly housing costs.</li><li>Front-end required annual income = monthly housing ÷ 0.45 × 12. Back-end required annual income = (monthly housing + all borrower monthly debts) ÷ 0.5699 × 12.</li><li>Required annual income is the greater of those two values. DTI uses combined gross income before taxes. No income entered means DTI is not available, not 0%.</li></ul></div>
+        <div><h3>Sources &amp; estimate provenance</h3><p>Rates are a dated public benchmark, not a loan offer. “Live” describes a successful benchmark fetch, not a real-time rate lock. A snapshot is a previously saved observation. Use the benchmark button to change your scenario rate.</p><div id="rate-methodology" class="source-record">Benchmark loading.</div><p>ZIP data is only a planning approximation. Historical geographic estimates may be buffered, and ZIP alone cannot establish a property tax bill, assessed value, exemptions or an insurance premium. A buffer cannot guarantee adequate coverage.</p><div id="estimate-methodology" class="source-record">ZIP source details will appear after lookup.</div><p id="applied-estimate-record">No ZIP estimates applied. Tax and hazard inputs start at manual assumptions of $4,800 and $3,000 per year.</p><p>The default MI rate and 45% / 56.99% limits are scenario assumptions, not universal lending rules or a complete FHA quote. Flood / wind coverage is not separately estimated; add appropriate recurring amounts under other housing costs. Closing costs and reserves are excluded, and a monthly allowance is not a cash-to-close estimate.</p></div>
+      </div></details>
+      <details id="privacy"><summary>Your information stays in this planning session <span>Privacy &amp; important limits</span></summary><div class="privacy-content"><p>Financial calculations happen entirely in your browser. This page does not save your inputs to browser storage, use analytics, or transmit price, borrower incomes or debts. External location and tax services receive only the ZIP during automatic lookups. Insurance history and the dated rate benchmark are bundled files; price scaling happens in your browser. The website host and ZIP providers can receive ordinary connection metadata such as your IP address. Source links open only when you choose them. This is an unlisted public page, not a password-protected page; anyone with its address can open it.</p><p>Reloading resets your scenario. Printing or saving a PDF creates a copy under your control. Use fictitious or rounded figures if you are on a shared device.</p></div></details>
+    </section>
+    <footer class="site-footer"><span class="footer-brand">MORTGAGE CAMP</span><p>Know the numbers. Find your way home.</p><span>USD · Educational planning only</span></footer>
+  </main>
+  <noscript><p class="noscript">Enable JavaScript to use the calculator. No financial results are available without it.</p></noscript>
+</body>
+</html>
